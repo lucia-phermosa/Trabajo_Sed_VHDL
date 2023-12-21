@@ -14,14 +14,6 @@ end top;
 
 architecture Behavioral of top is
     
-    component fdivider
-        port ( 
-            CLK     : in std_logic;
-            frecuencia : in integer := 1000 ; 
-            clock_out : out std_logic
-        );
-    end component;
-    
     component Gestor_Entradas
         port(
             CLK : in std_logic;
@@ -64,35 +56,15 @@ architecture Behavioral of top is
         );
     end component;
     
-    -- Señales reloj
-    signal clk_out1 : std_logic; -- Señal de reloj de salida 1
-    signal clk_out2 : std_logic; -- Señal de reloj de salida 2
-    
     signal piso_deseado : std_logic_vector(3 downto 0); -- Piso deseado determinado por los botones de entrada
     signal piso : std_logic_vector(3 downto 0); -- Piso actual en el que nos encontramos
     signal motor : std_logic_vector(1 downto 0); -- Motor de las puertas (STANDBY/OPENING/CLOSING)
     signal up_down : std_logic_vector(1 downto 0); -- Motor del ascensor (STANDBY/UP/DOWN)
 begin
     
-    prescaler1: fdivider 
-    port map
-    (
-        CLK => CLK,
-        frecuencia => 1000, 
-        clock_out => clk_out1
-    );
-    
-    prescaler2: fdivider 
-    port map
-    (
-        CLK => CLK,
-        frecuencia => 1, 
-        clock_out => clk_out2
-    );
-    
     Inst_gestor_entradas: gestor_entradas port map
     (
-        CLK => clk_out1,
+        CLK => CLK,
         RESET => RESET,
         BUTTON => BUTTON,
         piso_out => piso_deseado
@@ -110,7 +82,7 @@ begin
     
     Inst_counter: counter port map
     (
-        CLK => clk_out2,
+        CLK => CLK,
         RESET => RESET,
         piso_deseado => piso_deseado,
         UP => up_down,

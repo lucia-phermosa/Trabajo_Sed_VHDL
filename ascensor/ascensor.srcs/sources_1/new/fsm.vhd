@@ -13,12 +13,37 @@ entity fsm is
 end fsm;
 
 architecture Behavioral of fsm is 
+    
+    component timer
+        port(
+            CLK : in std_logic;
+            RESET : in std_logic;
+            timer_value : in integer;
+            CE : in std_logic;
+            C_OUT : out std_logic
+        );
+    end component;
+
     type states_type is (IDLE, STANDBY, CLOSING, UP, DOWN, OPENING);
     signal curr_state : states_type := IDLE;
     signal nxt_state : states_type;
     signal btn_memo, nxt_btn_memo : std_logic_vector(3 downto 0);
+
+    signal chip_enable : std_logic;
+    signal wait_value : std_logic;
+    signal chip_out : std_logic; 
     
 begin
+
+    Inst_timer: timer port map
+    (
+        CLK => CLK,
+        RESET => RESET,
+        timer_value => wait_value,
+        CE => chip_enable,
+        C_OUT => chip_out
+    );
+
     state_register: process(RESET, CLK)
     begin
         if (RESET = '0') then
@@ -38,21 +63,30 @@ begin
             when IDLE => 
                 nxt_state <= STANDBY;
             when STANDBY => 
-                if (piso_deseado /= "0000" and piso_deseado /= piso_actual) then
+                if (piso_deseado /= piso_actual) then
                     nxt_state <= CLOSING;
                     nxt_btn_memo <= piso_deseado;
                 end if;
-            when CLOSING => 
-                if(btn_memo > piso_actual) then
-                    nxt_state <= UP;
-                elsif (btn_memo < piso_actual) then
-                    nxt_state <= DOWN;
+            when CLOSING =>
+                chip_enable <= '1';
+                wait_value <= 500;
+                if(chip_out = '1') then 
+                    if(btn_memo > piso_actual) then
+                        nxt_state <= UP;
+                    elsif (btn_memo < piso_actual) then
+                        nxt_state <= DOWN;
+                    end if;
                 end if;
             when UP | DOWN => 
-                if (btn_memo = piso_actual) then
-                    nxt_state <= OPENING;
+                chip_enable <= '0';
+                wait_value <= 500;
+                if(chip_out = '1') then 
+                    if (btn_memo = piso_actual) then
+                        nxt_state <= OPENING;
+                    end if;
                 end if;
            when OPENING =>
+                chip_enable <= '1';
                 nxt_state <= STANDBY;
            when others => 
                 nxt_state <= IDLE;

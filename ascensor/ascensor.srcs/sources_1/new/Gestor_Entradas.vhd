@@ -12,6 +12,14 @@ end Gestor_Entradas;
 
 architecture Behavioral of Gestor_Entradas is
     
+    component fdivider
+        port ( 
+            CLK     : in std_logic;
+            frecuencia : in integer := 1000 ; 
+            clock_out : out std_logic
+        );
+    end component;
+
     component SYNCHRNZR
         port (
              CLK : in std_logic;
@@ -35,22 +43,33 @@ architecture Behavioral of Gestor_Entradas is
         );
     end component;
     
-    -- Se�ales intermedias del sincronizador
+    -- Señal de reloj
+    signal clk_out1 : std_logic; 
+
+    -- Señales intermedias del sincronizador
     signal sync_out : std_logic_vector(3 downto 0);
     signal edge_out : std_logic_vector(3 downto 0);
 
 begin
     
+    prescaler1: fdivider 
+    port map
+    (
+        CLK => CLK,
+        frecuencia => 1000, 
+        clock_out => clk_out1
+    );
+
     Inst_SYNCHRNZR: SYNCHRNZR port map
     (
-         CLK => CLK,
+         CLK => clk_out1,
          ASYNC_IN => BUTTON,
          SYNC_OUT => sync_out
     );
     
     Inst_EDGEDTCTR: EDGEDTCTR port map
     (
-         CLK => CLK,
+         CLK => clk_out1,
          SYNC_IN => sync_out,
          EDGE => edge_out
     );

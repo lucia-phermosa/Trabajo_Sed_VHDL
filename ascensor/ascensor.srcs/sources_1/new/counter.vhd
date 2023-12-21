@@ -13,13 +13,35 @@ entity counter is
 end counter;
 
 architecture Behavioral of counter is
+    
+    component fdivider
+        port ( 
+            CLK     : in std_logic;
+            frecuencia : in integer := 1000 ; 
+            clock_out : out std_logic
+        );
+    end component;
+
+    -- Señal de reloj
+    signal clk_out2 : std_logic;
+
     signal q_i : unsigned(3 downto 0);
+
 begin
-    process(CLK, RESET)
+
+    prescaler2: fdivider 
+    port map
+    (
+        CLK => CLK,
+        frecuencia => 1, 
+        clock_out => clk_out2
+    );
+
+    process(clk_out2, RESET)
     begin
         if(RESET = '0') then
             q_i <= (others => '0');
-        elsif rising_edge(CLK) then
+        elsif rising_edge(clk_out2) then
             if(UP = "10") then
                  q_i <= q_i + 1;
             elsif (UP = "01") then
