@@ -17,8 +17,8 @@ architecture Behavioral of top is
     component fdivider
         port ( 
             CLK     : in std_logic;
-            PSE_FREQ      : in integer := 1000 ; 
-            PSE_OUT : out std_logic
+            frecuencia : in integer := 1000 ; 
+            clock_out : out std_logic
         );
     end component;
     
@@ -64,10 +64,9 @@ architecture Behavioral of top is
         );
     end component;
     
-    -- Señales reloj
-    signal clk_out1 : std_logic; -- Señal de reloj de salida 1
-    signal clk_out2 : std_logic; -- Señal de reloj de salida 2
-    signal clk_out3 : std_logic;
+    -- SeÃ±ales reloj
+    signal clk_out1 : std_logic; -- SeÃ±al de reloj de salida 1
+    signal clk_out2 : std_logic; -- SeÃ±al de reloj de salida 2
     
     signal piso_deseado : std_logic_vector(3 downto 0); -- Piso deseado determinado por los botones de entrada
     signal piso : std_logic_vector(3 downto 0); -- Piso actual en el que nos encontramos
@@ -79,24 +78,16 @@ begin
     port map
     (
         CLK => CLK,
-        PSE_FREQ => 1000, 
-        PSE_OUT => clk_out1
+        frecuencia => 1000, 
+        clock_out => clk_out1
     );
     
     prescaler2: fdivider 
     port map
     (
         CLK => CLK,
-        PSE_FREQ => 10000, 
-        PSE_OUT => clk_out2
-    );
-    
-    prescaler3: fdivider 
-    port map
-    (
-        CLK => CLK,
-        PSE_FREQ => 1, 
-        PSE_OUT => clk_out3
+        frecuencia => 1, 
+        clock_out => clk_out2
     );
     
     Inst_gestor_entradas: gestor_entradas port map
@@ -119,7 +110,7 @@ begin
     
     Inst_counter: counter port map
     (
-        CLK => clk_out3,
+        CLK => clk_out2,
         RESET => RESET,
         piso_deseado => piso_deseado,
         UP => up_down,
